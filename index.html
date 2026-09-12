@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="windows">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>XIAODOU</title>
+  <meta name="description" content="XIAODOU 的个人主页，记录前端开发、探索与笔记。" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.gstatic.cn" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.cn/css2?family=Averia+Gruesa+Libre&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=43" />
+</head>
+<body>
+  <!-- 模糊粒子背景画布 -->
+  <canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+  <main class="stage">
+
+    <!-- 左栏 · 导航卡 -->
+    <aside class="card card-nav">
+      <div class="nav-brand">
+        <div class="nav-logo">🥥</div>
+        <div>
+          <div class="nav-title">XIAODOU</div>
+          <div class="nav-dev">(开发中)</div>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="blog.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          近期文章</a></li>
+        <li><a href="projects.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+          我的项目</a></li>
+        <li><a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          关于网站</a></li>
+        <li><a href="#" id="navShare" title="点击复制域名">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+          推荐分享</a></li>
+        <li><a href="#" title="云盘开发中，敬请期待">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 0 0-11.06 1.6A4 4 0 0 0 7 19.5h10.5z"/></svg>
+          我的云盘</a></li>
+      </ul>
+    </aside>
+
+    <!-- 右上 · 木鱼按钮（实拍木鱼贴图，背景已抠透明） -->
+    <button class="btn-muyu" id="btnMuyu" title="敲木鱼，积攒功德" aria-label="敲木鱼，积攒功德">
+      <img src="assets/muyu.png" alt="木鱼" draggable="false" />
+    </button>
+
+    <!-- 右上 · 时钟卡 -->
+    <section class="card card-clock">
+      <div class="clock-time seg-clock" id="clockTime" aria-live="polite"></div>
+      <div class="clock-date" id="clockDate"></div>
+    </section>
+
+    <!-- 右栏 · 日历卡（整张可点，打开详情面板：节假日 / 放假 / 补班） -->
+    <section class="card card-calendar" id="cardCalendar" role="button" tabindex="0"
+             aria-haspopup="dialog" aria-label="查看日历详情：节假日与放假安排">
+      <div class="cal-head">
+        <span class="cal-title" id="calTitle"></span>
+        <span class="cal-side">
+          <span class="cal-today" id="calToday"></span>
+          <span class="cal-more" aria-hidden="true">详情</span>
+        </span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </section>
+
+    <!-- 中央 · 横幅幻灯片卡（三张壁纸自动轮播；底部圆点可手动切换） -->
+    <div class="card card-banner" id="cardBanner">
+      <div class="banner-slides">
+        <img class="banner-slide is-active" src="assets/banner/slide-1-rog.jpg" alt="ROG 20 周年纪念壁纸" />
+        <img class="banner-slide" src="assets/banner/slide-2-vangogh.jpg" alt="后印象派星空壁纸" />
+        <img class="banner-slide" src="assets/banner/slide-3-harmony.jpg" alt="HarmonyOS 壁纸" />
+      </div>
+      <div class="banner-dots" id="bannerDots"></div>
+    </div>
+
+    <div class="card card-hello">
+      <div class="avatar-float">
+        <div class="avatar-wrap">
+          <img src="assets/avatar.jpg" alt="XIAODOU 头像" />
+        </div>
+      </div>
+      <h1 class="hello">
+        <span class="hello-greet" id="greetWord">Good Evening</span>
+        <span class="hello-main">I'm <span class="name">XIAODOU</span></span>
+        <span class="hello-sub">Nice to meet you!</span>
+      </h1>
+    </div>
+
+    <div class="card card-social">
+      <a class="social-btn github" href="https://github.com/xiaodou" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.32-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.18 1.77 1.18 1.03 1.75 2.7 1.25 3.35.95.1-.74.4-1.25.73-1.53-2.55-.29-5.22-1.28-5.22-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18.9-.25 1.9-.38 2.9-.38s2 .13 2.9.38c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.83 1.18 3.09 0 4.41-2.67 5.38-5.22 5.67.41.35.77 1.04.77 2.1v3.11c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+        Github
+      </a>
+      <a class="social-btn juejin" href="https://juejin.cn" target="_blank" rel="noopener">
+        <!-- 稀土掘金官方 mark（Simple Icons 24×24 网格），品牌蓝 #1E80FF -->
+        <svg viewBox="0 0 24 24" fill="#1E80FF" aria-hidden="true"><path d="m12 14.316 7.454-5.88-2.022-1.625L12 11.1l-.004.003-5.432-4.288-2.02 1.624 7.452 5.88Zm0-7.247 2.89-2.298L12 2.453l-.004-.005-2.884 2.318 2.884 2.3Zm0 11.266-.005.002-9.975-7.87L0 12.088l.194.156 11.803 9.308 7.463-5.885L24 12.085l-2.023-1.624Z"/></svg>
+        稀土掘金
+      </a>
+      <a class="social-btn email" href="mailto:isxiaodou@163.com" aria-label="邮件联系">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="m2 7 10 6 10-6"/></svg>
+      </a>
+    </div>
+
+    <a class="card card-rec" id="cardRec" href="https://developer.mozilla.org/" target="_blank" rel="noopener">
+      <div class="rec-thumb" id="recThumb" style="background:linear-gradient(135deg,#1b1b1f,#454553)"><span class="rec-initial">M</span></div>
+      <div class="rec-body">
+        <div class="rec-label">随机推荐</div>
+        <div class="rec-desc" id="recName">MDN Web Docs</div>
+        <div class="rec-sub" id="recDesc">Web 开发权威文档，语法与兼容性一查便知</div>
+      </div>
+    </a>
+
+    <!-- 左栏 · 最新新闻（导航卡正下方） -->
+    <section class="card card-latest">
+      <div class="latest-head">最新新闻</div>
+      <ul class="news-list">
+        <li>
+          <a href="https://view.inews.qq.com/a/20260909A09PS700" target="_blank" rel="noopener">
+            <span class="news-title">2026年服贸会开幕，90个国家和地区设展办会</span>
+            <span class="news-src">新华网 · 09-09</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://www.toutiao.com/article/7683303492462723625/" target="_blank" rel="noopener">
+            <span class="news-title">前8个月我国货物贸易进出口同比增长7.6%</span>
+            <span class="news-src">央视新闻 · 09-09</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://new.qq.com/rain/a/20260909A0AZHN00" target="_blank" rel="noopener">
+            <span class="news-title">名古屋亚运会倒计时10天，中国代表团15人出征</span>
+            <span class="news-src">北京青年报 · 09-09</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 右底部 · 音乐播放卡 -->
+    <section class="card card-music">
+      <button class="music-play" id="musicPlay" aria-label="播放/暂停">
+        <svg id="musicIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7z"/></svg>
+      </button>
+      <div class="music-info">
+        <div class="music-name">Close To You</div>
+        <div class="music-artist">Cover Band</div>
+      </div>
+      <div class="eq" id="eqBox">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       日历详情面板（点日历卡打开）。
+       结构：layer 负责"整屏定位 + 居中"，backdrop 负责压暗虚化；
+       sheet 才是那张会从日历卡里"长出"来的面板。
+       面板本身不写居中用的 transform，transform 要空出来给开合动画做 FLIP。
+       ============================================================ -->
+  <div class="cal-layer" id="calLayer">
+    <div class="cal-backdrop" id="calBackdrop"></div>
+    <section class="cal-sheet" id="calSheet" role="dialog" aria-modal="true" aria-labelledby="sheetYM">
+      <div class="sheet-inner">
+        <header class="sheet-head">
+          <div class="sheet-lead">
+            <span class="sheet-ym" id="sheetYM"></span>
+            <span class="sheet-sub" id="sheetSub"></span>
+          </div>
+          <div class="sheet-tools">
+            <button type="button" class="sheet-nav" id="sheetPrev" aria-label="上个月">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>
+            </button>
+            <button type="button" class="sheet-today" id="sheetToday">今天</button>
+            <button type="button" class="sheet-nav" id="sheetNext" aria-label="下个月">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m10 6 6 6-6 6"/></svg>
+            </button>
+            <button type="button" class="sheet-close" id="sheetClose" aria-label="关闭">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="sheet-body">
+          <div class="sheet-week">
+            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+          </div>
+          <div class="sheet-grid" id="sheetGrid"></div>
+        </div>
+        <footer class="sheet-foot">
+          <div class="sheet-legend">
+            <span><i class="k-off"></i>放假</span>
+            <span><i class="k-work"></i>补班</span>
+            <span><i class="k-we"></i>周末</span>
+          </div>
+          <div class="sheet-sum" id="sheetSum"></div>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js?v=33"></script>
+</body>
+</html>

@@ -1,0 +1,2069 @@
+/* ============================================================
+   XIAODOU 个人主页复刻 — 设计系统
+   主题变量取自原站 :root 计算值
+   ============================================================ */
+:root {
+  --color-brand: #2fcbe7;
+  /* 文字色比早先各收深一档：玻璃是半透的，背景又是深色实拍壁纸，
+     原来的 #5b423f / #8b7667 在 11~13px 小字上会被背景色"吃"掉一截，
+     看着就发灰发虚。收深后对比度上去，字形边缘立刻立得住。 */
+  --color-primary: #4a3330;
+  --color-secondary: #6b5346;
+  --color-brand-secondary: #eec25e;
+  --color-bg: #d4e8f3; /* 图片没加载出来时的兜底底色 */
+  --color-border: #ffffff;
+  /* ---------- 背景照片：整页底图（哑光彩色石头壁纸） ----------
+     照片挂在 html 上（见下方 html 选择器），body 只压一层很薄的纱。
+     这样做的好处：卡片背后的 backdrop-filter 会去糊"这张照片本身"，
+     每张卡落在照片的不同位置上，就自然透出不同的石头颜色——
+     比之前手写 8 团色雾更真实，也更像 iOS 的玻璃压壁纸。
+       --bg-photo  底图地址（换壁纸只改这一个 url）
+       --bg-veil   照片上压的薄纱：数值是唯一开关
+                   偏白 → 照片更淡、卡片文字更好读；偏透明 → 照片更浓艳 */
+  --bg-photo: url("assets/bg-stones.jpg");
+  --bg-veil: linear-gradient(
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.1)
+  );
+  /* 卡片白度比浅色背景时代调高了一档：照片整体偏暗，
+     白色叠得薄了卡片会变成中灰，深棕文字就压不住了。 */
+  --color-card: rgba(255, 255, 255, 0.5);
+  --color-article: rgba(255, 255, 255, 0.56);
+  /* ---------- 形状系统：有方有圆 ----------
+     排列规则是「相邻两张卡必定一圆一方」，具体谁方谁圆见下方
+     「有方有圆」注释块。四个值只调"档位"，改这里就能整体变软/变硬：
+       方 = 22px   棱角干净的面板/信息卡（在左右两列）
+       中 = 56px   中列的软档：比"方"圆润、又比"圆"克制
+       圆 = 76px   饱满的主视觉卡
+       胶囊 = 999px 细条控件（社交条 / 音乐条），两端全圆 */
+  --r-square: 22px;
+  --r-soft: 56px;
+  --r-round: 76px;
+  --r-pill: 999px;
+  /* 液态玻璃参数：blur 越大越糊越通透，saturate 提饱和让背景色"透而艳"（iOS 味的来源） */
+  --glass-blur: 24px;
+  --glass-sat: 1.9;
+  --glass-tint: brightness(1.05);
+  /* 玻璃表面的光：左上斜向主反光 + 右下回光 + 左上焦点高光（纯静态，不参与动画） */
+  --glass-sheen: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.56) 0%,
+      rgba(255, 255, 255, 0.12) 36%,
+      rgba(255, 255, 255, 0) 58%
+    ),
+    linear-gradient(315deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0) 40%),
+    radial-gradient(
+      ellipse 42% 30% at 22% 12%,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0) 62%
+    );
+  /* ---------- 字体栈 ----------
+     原来 --font-sans 里 "sans-serif" 夹在中间，把它后面的
+     "Microsoft YaHei" / "Helvetica Neue" 全挡死了——那些字体永远不会被考虑。
+     通用族名必须放最后，这里顺便把 Windows 的中文指名到 "Microsoft YaHei UI"
+     （Win10/11 自带，字形跟雅黑同源但排得更紧、渲染更锐），
+     西文交给 Segoe UI，小字立刻干净一截。 */
+  --font-cjk: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
+    "HarmonyOS Sans SC", "Hiragino Sans GB", "Source Han Sans SC",
+    "Noto Sans CJK SC", "Noto Sans SC";
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    "Segoe UI Variable Text", Roboto, "Helvetica Neue", Arial, var(--font-cjk),
+    sans-serif;
+  --font-averia: "Averia Gruesa Libre", var(--font-cjk), sans-serif;
+  /* 玻璃厚度 = 外投影（浮起）+ 顶亮环（镜面）+ 两侧缘光（透镜边缘）+ 内底阴影（容积） */
+  --shadow-card: 0 34px 46px -30px rgba(30, 45, 60, 0.16),
+    0 2px 6px -2px rgba(30, 45, 60, 0.06),
+    inset 0 2px 1px -1px rgba(255, 255, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -2px 2px -1px rgba(91, 66, 63, 0.07),
+    inset 2px 0 2px -1px rgba(255, 255, 255, 0.6),
+    inset -2px 0 2px -1px rgba(255, 255, 255, 0.6),
+    inset 0 -18px 26px -22px rgba(91, 66, 63, 0.14);
+  --shadow-card-hover: 0 44px 56px -32px rgba(30, 45, 60, 0.2),
+    0 2px 6px -2px rgba(30, 45, 60, 0.07),
+    inset 0 2px 1px -1px rgba(255, 255, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -2px 2px -1px rgba(91, 66, 63, 0.07),
+    inset 2px 0 2px -1px rgba(255, 255, 255, 0.75),
+    inset -2px 0 2px -1px rgba(255, 255, 255, 0.75),
+    inset 0 -18px 26px -22px rgba(91, 66, 63, 0.14);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  /* 这里以前挂的是 `cursor: url("assets/cursor.svg") 2 1, auto` 图片光标，
+     现已换成 DOM 虚拟鼠标（见文件末尾「虚拟鼠标」一节）。 */
+  scroll-behavior: smooth;
+  /* 整页背景照片：cover 铺满、fixed 让照片不随内容滚动（滚动时玻璃后面是"匀速"的，
+     不会出现照片跟着卡片一起跑、失去"隔着一层玻璃"的错觉） */
+  background: var(--color-bg) var(--bg-photo) center / cover no-repeat fixed;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-primary);
+  /* 照片上面那层薄纱。原来这里是四角青/黄/紫/粉的色雾，
+     现在底图本身就是彩色的，色雾只会糊掉照片，故只留薄纱。 */
+  background: var(--bg-veil);
+  min-height: 100vh;
+  /* 关键一步：WebKit 系的 antialiased 会强制灰度抗锯齿、把 ClearType 次像素渲染关掉，
+     11~13px 的中文小字在这种模式下会发灰、边缘发毛。改回 auto 交还给系统渲染，
+     这是"字更清晰"里收益最大、代价最小的一条。 */
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* 与原站一致：固定像素布局，窄视口允许横向滚动 */
+}
+
+::selection {
+  background: var(--color-brand);
+  color: #fff;
+}
+
+/* ---------- 背景粒子画布 ----------
+   底图换成实拍壁纸后，这层色块从"背景主体"退成"照片上的一层柔光"，
+   透明度因此从 0.75 收到 0.3：再高就把照片糊住了。
+
+   ⚠️ 性能红线：这里曾经挂 filter: blur(50px)，而画布每帧都在重绘 ——
+   每帧都要对整个视口跑一遍 50px 大半径模糊（约 3 个 pass），中端核显直接被吃满，
+   整页掉帧（最显眼的就是光标不跟手）。柔边已经直接画进色块（径向渐变），
+   这个元素上永远不要再挂任何 filter。 */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 2.2s ease;
+  pointer-events: none;
+}
+.bg-canvas.on {
+  opacity: 0.3;
+}
+
+/* ---------- 液态玻璃卡片（对齐 iOS Liquid Glass） ----------
+   三层叠加造出"玻璃"：
+   ① backdrop-filter 糊掉并提饱和背景 —— 玻璃的"透"
+   ② --glass-sheen 表面反光 —— 斜向主高光 + 右下回光 + 左上焦点光斑
+   ③ --shadow-card 顶亮环 / 两侧缘光 / 内底阴影 —— 玻璃的厚度与透镜边缘
+   全部是静态光影，不参与动画（性能） */
+.card {
+  position: absolute;
+  /* 每张卡自己的色偏；默认透明（不偏色），具体卡片在下方统一覆盖 */
+  --card-tint: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+  background: var(--glass-sheen), var(--card-tint), var(--color-card);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: var(--r-soft); /* 默认「中」档，具体卡片在下方按职责覆盖 */
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+.card.hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ---------- 每张卡的玻璃色偏 ----------
+   一块玻璃顶多"很透"，但要整页不单调，得让每张卡透着不同颜色。
+   全部是低饱和的大面积径向色雾，压在最底层，不动文字对比度。 */
+.card-nav {
+  --card-tint: radial-gradient(
+    ellipse 85% 68% at 20% 12%,
+    rgba(47, 203, 231, 0.4) 0%,
+    rgba(47, 203, 231, 0) 70%
+  );
+}
+.card-latest {
+  --card-tint: radial-gradient(
+    ellipse 85% 68% at 78% 88%,
+    rgba(60, 200, 160, 0.34) 0%,
+    rgba(60, 200, 160, 0) 70%
+  );
+}
+.card-hello {
+  --card-tint: radial-gradient(
+      ellipse 78% 62% at 24% 16%,
+      rgba(244, 170, 196, 0.42) 0%,
+      rgba(244, 170, 196, 0) 70%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 84% 86%,
+      rgba(238, 194, 94, 0.3) 0%,
+      rgba(238, 194, 94, 0) 70%
+    );
+}
+.card-clock {
+  --card-tint: radial-gradient(
+      ellipse 90% 80% at 26% 18%,
+      rgba(47, 203, 231, 0.44) 0%,
+      rgba(47, 203, 231, 0) 72%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(47, 203, 231, 0.1) 0%,
+      rgba(238, 194, 94, 0.14) 100%
+    );
+}
+.card-calendar {
+  --card-tint: radial-gradient(
+    ellipse 88% 70% at 70% 92%,
+    rgba(238, 194, 94, 0.4) 0%,
+    rgba(238, 194, 94, 0) 72%
+  );
+}
+.card-social {
+  --card-tint: radial-gradient(
+    ellipse 80% 90% at 50% 12%,
+    rgba(186, 160, 240, 0.34) 0%,
+    rgba(186, 160, 240, 0) 72%
+  );
+}
+.card-rec {
+  --card-tint: radial-gradient(
+    ellipse 85% 70% at 24% 82%,
+    rgba(150, 190, 245, 0.4) 0%,
+    rgba(150, 190, 245, 0) 72%
+  );
+}
+.card-music {
+  --card-tint: radial-gradient(
+    ellipse 80% 150% at 10% 50%,
+    rgba(47, 203, 231, 0.36) 0%,
+    rgba(47, 203, 231, 0) 72%
+  );
+}
+
+/* ---------- 有方有圆：相邻卡片一律「一圆一方」 ----------
+   目标不是"按列分组"，而是让挨着的两张卡形状必定不同，
+   横看竖看都是交替的：
+     左列  导航=方 · 新闻=圆
+     中列  横幅=圆 · 问候=中 · 社交条=胶囊 · 推荐=中 · 音乐条=胶囊
+     右列  时钟=方 · 日历=圆
+   中列用"中"档（56px）单独调软——它夹在两列硬形之间，
+   比左右都圆润，整条中间竖带才不会硌眼。
+   排列后的方形卡 = 导航 / 时钟，圆形卡 = 横幅 / 新闻 / 日历，
+   中列软卡 = 问候 / 推荐。 */
+.card-nav      { border-radius: var(--r-square); }  /* 方 */
+.card-clock    { border-radius: var(--r-square); }  /* 方 */
+.card-hello    { border-radius: var(--r-soft); }    /* 中（中列，偏圆润） */
+.card-rec      { border-radius: var(--r-soft); }    /* 中（中列，偏圆润） */
+.card-banner   { border-radius: var(--r-round); }   /* 圆 */
+.card-latest   { border-radius: var(--r-round); }   /* 圆 */
+.card-calendar { border-radius: var(--r-round); }   /* 圆 */
+.card-social   { border-radius: var(--r-pill); }    /* 胶囊 */
+.card-music    { border-radius: var(--r-pill); }    /* 胶囊 */
+
+/* 方卡内部的元素同步收棱角：外圆角 > 内圆角，嵌套才不会"鼓包" */
+.card-nav .nav-logo     { border-radius: 16px; }
+.card-nav .nav-links li a { border-radius: 14px; }
+
+/* ---------- 入场动画：卡片按阅读顺序柔和浮现 ----------
+   关键帧只写 from + fill-mode:backwards：
+   delay 期间应用 from（隐藏），结束后不保持填充 → hover transform 不被覆盖 */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+}
+.card,
+.btn-muyu {
+  animation: rise-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.card-nav     { animation-delay: 0.05s; }
+.card-banner  { animation-delay: 0.14s; }
+.card-hello   { animation-delay: 0.22s; }
+.btn-muyu     { animation-delay: 0.30s; }
+.card-clock   { animation-delay: 0.34s; }
+.card-calendar{ animation-delay: 0.42s; }
+.card-latest  { animation-delay: 0.50s; }
+.card-social  { animation-delay: 0.58s; }
+.card-rec     { animation-delay: 0.66s; }
+.card-music   { animation-delay: 0.74s; }
+
+/* ---------- 主舞台：固定像素画布，fitStage 等比缩放后于视口正中完整显示 ---------- */
+.stage {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1002px; /* 内容基准宽：与全部卡片的右缘（日历 1002）一致 */
+  height: 779px; /* 与原站 scrollHeight=779 完全一致 */
+  transform-origin: 0 0;
+  z-index: 1;
+}
+
+/* a 通用 hover */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================================
+   左栏 · 导航卡（XIAODOU + 5 链接，内容紧凑无空白）
+   ============================================================ */
+.card-nav {
+  left: -60px;
+  top: 45px;
+  width: 280px;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 22px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-averia);
+  font-size: 22px;
+  color: #fff;
+  box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.4);
+}
+/* 内容换成 🥥 后补的：emoji 字形自带一圈内边距，22px 在 46px 的块里显小，
+   提到 26px 恢复原来「X」的视觉分量（emoji 不吃 color，白色规则对它无效，无妨） */
+.nav-logo {
+  font-size: 26px;
+}
+.nav-title {
+  font-family: var(--font-averia);
+  font-size: 20px;
+  color: var(--color-primary);
+  line-height: 1.1;
+}
+.nav-dev {
+  font-size: 11px;
+  color: var(--color-secondary);
+  margin-top: 3px;
+  letter-spacing: 1px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 22px;
+  font-size: 15px;
+  color: var(--color-secondary);
+  transition: color 0.25s, background 0.25s, transform 0.25s;
+}
+.nav-links li a svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-links li a:hover svg {
+  transform: scale(1.15);
+}
+.nav-links li a:hover {
+  color: var(--color-primary);
+  background: rgba(47, 203, 231, 0.1);
+  transform: translateX(4px);
+}
+
+/* ============================================================
+   右上 · 木鱼按钮（实拍贴图；动画只用 transform/opacity，走 GPU 合成）
+   ============================================================ */
+.btn-muyu {
+  position: absolute;
+  left: 640px;
+  top: 18px;
+  width: 102px;
+  height: 80px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 5;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-muyu img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  transform-origin: 50% 82%; /* 支点靠下，敲击像点头 */
+  will-change: transform;    /* 常驻合成层，首帧即满帧 */
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 8px 12px rgba(91, 66, 63, 0.28)); /* 静态投影，不做动画 */
+}
+.btn-muyu:hover img {
+  transform: scale(1.06);
+}
+.btn-muyu:active img {
+  transform: scale(0.9);
+}
+/* 敲击动画：压扁 → 回弹 → 停，纯 transform 合成，0.3s 利落收尾 */
+@keyframes muyu-hit {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.1, 0.78); }
+  62%  { transform: scale(0.94, 1.07); }
+  82%  { transform: scale(1.03, 0.97); }
+  100% { transform: scale(1); }
+}
+.btn-muyu.hit img {
+  animation: muyu-hit 0.3s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+/* 鼠标位置冒出的"功德 +1"：transform + opacity 合成动画 */
+.muyu-pop {
+  position: fixed;
+  z-index: 70;
+  pointer-events: none;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  will-change: transform, opacity;
+  animation: muyu-pop 0.9s cubic-bezier(0.22, 0.9, 0.36, 1) forwards;
+}
+.muyu-pop .lotus {
+  font-size: 13px;
+  margin-left: 2px;
+}
+@keyframes muyu-pop {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+  16%  { opacity: 1; transform: translate(-50%, -14px) scale(1.06); }
+  72%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -56px) scale(1); }
+}
+/* 点击"推荐分享"复制域名后的气泡提示 */
+.copy-pop {
+  position: fixed;
+  z-index: 70;
+  pointer-events: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 0.667px solid var(--color-border);
+  box-shadow: 0 14px 28px -12px rgba(91, 66, 63, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-primary);
+  white-space: nowrap;
+  will-change: transform, opacity;
+  transform: translate(-50%, 0);
+  animation: copy-pop 1.4s cubic-bezier(0.22, 0.9, 0.36, 1) forwards;
+}
+@keyframes copy-pop {
+  0%   { opacity: 0; transform: translate(-50%, -4px) scale(0.85); }
+  14%  { opacity: 1; transform: translate(-50%, -14px) scale(1.04); }
+  70%  { opacity: 1; transform: translate(-50%, -24px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -44px) scale(1); }
+}
+
+/* ============================================================
+   右上 · 时钟卡 232×132
+   ============================================================ */
+.card-clock {
+  left: 652px;
+  top: 111px;
+  width: 232px;
+  height: 132px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-shadow: var(--shadow-card), 0 2px 12px rgba(47, 203, 231, 0.08);
+}
+.clock-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-averia);
+  font-size: 40px;
+  line-height: 1;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(47, 203, 231, 0.12);
+}
+.clock-date {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-secondary);
+  text-align: center;
+  letter-spacing: 1.5px;
+}
+
+/* 时钟 · 七段数码管（复刻原站 SVG 数码钟） */
+.seg-clock {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: initial;
+  letter-spacing: 0;
+}
+.seg-clock .seg {
+  width: 29px;
+  height: 52px;
+  display: block;
+}
+.seg-clock .seg path {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3.5; /* 3.2 → 3.5：笔画略加粗，数码管缩到 0.9 后不再"发虚成灰线" */
+  stroke-linecap: round;
+  opacity: 0.12; /* 熄灯段 0.1 → 0.12：点亮段与熄灭段的差更明确，读数一眼到位 */
+  transition: opacity 0.18s ease;
+}
+.seg-clock .seg path.on {
+  opacity: 1;
+}
+.seg-clock .colon {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 1px;
+}
+.seg-clock .colon::before,
+.seg-clock .colon::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.42;
+  transition: opacity 0.15s ease;
+}
+.seg-clock .colon.blink::before,
+.seg-clock .colon.blink::after {
+  opacity: 0.07; /* 每秒闪烁，指示秒的走动（复刻原站指示点） */
+}
+
+/* ============================================================
+   右栏 · 日历卡 350×286
+   ============================================================ */
+.card-calendar {
+  left: 652px;
+  top: 279px;
+  width: 350px;
+  height: 286px;
+  padding: 26px 26px 18px;
+  /* 改成纵向 flex：头部占固定高度，日期网格 flex:1 撑满余量。
+     这样当月是 5 行还是 6 行都由高度均分，不会再出现
+     "最后一行 28/29/30 被卡片下缘切掉"的溢出。 */
+  display: flex;
+  flex-direction: column;
+}
+.cal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  /* 原来标题区吃掉 26px（12 margin + 12 padding + 边框），
+     留给格子的高度太紧——末行数字底边距卡片内缘只剩 2px，看着像被切。
+     这里各收 3px，把省下的高度还给日期行。 */
+  margin-bottom: 9px;
+  padding-bottom: 10px;
+  /* 与新闻卡同一种虚线，把"标题区"和"格子区"分开 */
+  border-bottom: 1px dashed rgba(107, 83, 70, 0.18);
+}
+/* 月份用圆体做标题，和时钟、问候语同族 —— 一眼是"标题"，而不是一串日期数字 */
+.cal-title {
+  font-family: var(--font-averia);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: var(--color-primary);
+}
+.cal-today {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  color: var(--color-secondary);
+}
+/* 右上角那一组：日期 + 「详情」小胶囊。
+   胶囊是这张卡"可以点开"的可见线索（整卡可点，胶囊只是视觉提示，不单独绑事件）。 */
+.cal-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cal-more {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 2px 7px 3px;
+  border-radius: 999px;
+  color: #177a90;
+  background: rgba(47, 203, 231, 0.18);
+  box-shadow: inset 0 0 0 0.5px rgba(47, 203, 231, 0.38);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.card-calendar:hover .cal-more {
+  background: var(--color-brand);
+  color: #fff;
+}
+.card-calendar {
+  cursor: pointer;
+}
+.card-calendar:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+}
+.cal-grid {
+  flex: 1;                             /* 吃掉头部以下的全部高度 */
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;                 /* 行高按可用高度均分：5 行月 / 6 行月都不会溢出 */
+  text-align: center;
+  font-variant-numeric: tabular-nums;  /* 数字等宽，七列才对得齐 */
+}
+.cal-grid .wk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-secondary);
+  opacity: 0.8;
+  padding: 0;
+}
+/* 周一起始，第 6、7 列正好是周六、周日 */
+.cal-grid .wk:nth-child(6),
+.cal-grid .wk:nth-child(7) {
+  color: #b5655c;
+  opacity: 0.9;
+}
+.cal-grid .day {
+  position: relative;
+  z-index: 0;                /* 建层叠上下文，伪元素才能落在文字之下、卡片之上 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--color-primary);
+  transition: color 0.2s;
+}
+/* 高亮圆交给伪元素：格子本身是"扁的"（宽 > 高），
+   直接给格子 border-radius:50% 会画成椭圆 —— 这是原来最显眼的毛病。 */
+.cal-grid .day::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 27px;
+  height: 27px;
+  margin: -13.5px 0 0 -13.5px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.22s;
+  z-index: -1;
+}
+.cal-grid .day:not(.blank):hover::before {
+  background: rgba(47, 203, 231, 0.18);
+}
+.cal-grid .day.we {
+  color: #b5655c;            /* 周末数字用同一支暖红，与表头呼应 */
+}
+.cal-grid .day.blank {
+  visibility: hidden;        /* 原来是 opacity:0 + pointer-events:none，留白更干净 */
+}
+.cal-grid .day.today {
+  color: #fff;
+  font-weight: 600;
+}
+.cal-grid .day.today::before {
+  background: linear-gradient(135deg, var(--color-brand), #7fe3f5);
+  box-shadow: 0 8px 16px -6px rgba(47, 203, 231, 0.6);
+}
+/* 今天徽章的呼吸光环：与高亮圆同尺寸、同心，scale+opacity 合成动画 */
+.cal-grid .day.today::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 27px;
+  height: 27px;
+  margin: -13.5px 0 0 -13.5px;
+  border-radius: 50%;
+  border: 2px solid rgba(47, 203, 231, 0.5);
+  pointer-events: none;
+  animation: today-ring 2.6s ease-out infinite;
+}
+@keyframes today-ring {
+  0%   { transform: scale(1);    opacity: 0.75; }
+  70%  { transform: scale(1.5);  opacity: 0; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+/* 放假 / 补班的小圆点：绝对定位，不吃格子的排版空间，
+   只在数字下面点一下 —— 既提示"这个月有假"，也暗示这张卡能点开 */
+.cal-grid .day .dot {
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: #d0614f;
+}
+.cal-grid .day .dot.work {
+  background: #8b94a1;
+}
+.cal-grid .day.today .dot {
+  background: #fff;
+}
+
+/* ============================================================
+   中央列 · 横幅插画 + 问候卡 + 社交按钮 + 随机推荐
+   ============================================================ */
+.card-banner {
+  left: 256px;
+  top: -45px;
+  width: 360px;
+  height: 200px;
+  overflow: hidden;
+  padding: 0;
+  z-index: 1;
+}
+/* ---------- 横幅幻灯片：三张壁纸交叉淡入轮播 ----------
+   每张 slide 都是一张绝对定位、铺满卡片的 img，靠 opacity 切换。
+   当前帧额外跑一段 bannerZoom（缓慢推近），切走时 class 被摘掉、
+   动画随之复位，所以每张都从同一比例重新推近，节奏一致。 */
+.banner-slides {
+  position: absolute;
+  inset: 0;
+}
+.banner-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transform: scale(1.05);
+  will-change: opacity, transform;
+  transition: opacity 1.1s ease;
+}
+.banner-slide.is-active {
+  opacity: 1;
+  z-index: 1;
+  animation: bannerZoom 8s ease-out forwards;
+}
+@keyframes bannerZoom {
+  from { transform: scale(1.05); }
+  to   { transform: scale(1.12); }
+}
+
+/* 底部一层极淡的影，让指示点在亮色壁纸（星空 / HarmonyOS）上也压得住 */
+.card-banner::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 68px;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.32));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 指示点：居中压在卡底。此处已落在 76px 圆角的直线段内，不会被切掉 */
+.banner-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 15px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+.banner-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1), background 0.32s ease;
+}
+.banner-dots i.on {
+  width: 20px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-slide {
+    transform: none;
+    transition: opacity 0.2s linear;
+  }
+  .banner-slide.is-active { animation: none; }
+}
+
+.card-hello {
+  left: 256px;
+  top: 191px;
+  width: 360px;
+  height: 288px;
+  padding: 26px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  z-index: 2;
+}
+/* 悬浮动画壳：框+头像作为整体一起浮动；hover 的 scale/rotate 留在 wrap 层互不干扰 */
+.avatar-float {
+  animation: avatar-float 6s ease-in-out infinite;
+}
+.avatar-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 18px 30px -16px rgba(47, 203, 231, 0.55);
+  flex-shrink: 0;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.avatar-wrap:hover {
+  transform: scale(1.08) rotate(-4deg);
+}
+.avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 极缓慢的悬浮呼吸：幅度小、周期长，视线不会被惊扰 */
+@keyframes avatar-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+.hello h1 {
+  font-family: var(--font-averia);
+  font-weight: 400;
+  color: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+/* 问候词：小字 eyebrow，拉开与主名的层级 */
+.hello-greet {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+/* 主视觉：名字行 */
+.hello-main {
+  display: block;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: 0.5px;
+}
+/* 副行：收小让层级落回主行 */
+.hello-sub {
+  display: block;
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--color-secondary);
+}
+/* 注：主名 <span class="name"> 位于 <h1 class="hello"> 之内，h1 自己就是 .hello，
+   因此 ".hello h1 .name" 这个后代选择器永远匹配不到——截图里 XIAODOU 一直是
+   纯深棕色，用的是 .hello-main 继承下来的主色。此处保留但不改外观（与原站一致）；
+   若哪天想让名字真的走渐变，把选择器改成 ".hello .name" 即可。 */
+.hello h1 .name {
+  /* 渐变两端各收深一档：浅青 + 浅黄打在浅玻璃上本来就"发飘"，
+     收深后字面与底色的差值变大，笔画边缘立刻清楚。 */
+  background: linear-gradient(90deg, #16b0d2, #dda62a 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* 原先是 filter: drop-shadow(...)：filter 会把这个元素整体位图化，
+     再叠上舞台那层等比缩放 = 二次重采样，字沿必毛。改用 text-shadow
+     （只按字形轮廓画晕，不触发位图化），顺带垫一层极淡的白让彩字从玻璃上"浮"起来。 */
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+  padding: 0 2px;
+}
+.hello-tip {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-secondary);
+}
+
+/* 社交按钮行 */
+.card-social {
+  left: 301px;
+  top: 515px;
+  width: 315px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 45px;
+  padding: 0 20px;
+  border-radius: 20px;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), filter 0.3s;
+}
+.social-btn svg {
+  width: 17px;
+  height: 17px;
+}
+.social-btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.06);
+}
+.social-btn.github {
+  padding: 0 22px;
+  background: #070707;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+}
+.social-btn.juejin {
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5);
+}
+/* 掘金 mark 在 24×24 网格里是"宽扁"的（宽度占满 24、高只有约 18），
+   塞进和正方形 GitHub 图标一样的 17px 方框里，会显得小一号、发飘。
+   单独放到 20px，让两个按钮的图标视觉重量对得上。 */
+.social-btn.juejin svg {
+  width: 20px;
+  height: 20px;
+}
+.social-btn.email {
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  border-radius: 50%;
+  background: #a8e6cf;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   中央底部 · 随机推荐卡
+   ============================================================ */
+.card-rec {
+  left: 301px;
+  top: 599px;
+  width: 200px;
+  height: 180px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+.rec-thumb {
+  position: relative;
+  width: 100%;
+  height: 92px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+/* 柔光斑：叠在 SVG 封面上增加玻璃质感层次 */
+.rec-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.22), transparent 44%),
+    radial-gradient(circle at 14% 88%, rgba(255, 255, 255, 0.12), transparent 40%);
+  pointer-events: none;
+}
+.rec-thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-rec:hover .rec-thumb svg {
+  transform: scale(1.06);
+}
+.rec-initial {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-rec:hover .rec-initial {
+  transform: scale(1.14);
+}
+.rec-body {
+  flex: 1;
+  min-height: 0;
+  padding: 7px 14px 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+}
+.rec-label {
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rec-label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(47, 203, 231, 0.2);
+}
+.rec-desc {
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rec-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--color-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================
+   左栏 · 最新新闻卡（与导航卡同宽同左缘，3 条当日简讯）
+   ============================================================ */
+.card-latest {
+  left: -60px;
+  top: 397px;
+  width: 280px;
+  min-height: 250px;
+  padding: 0;
+  overflow: hidden;
+}
+.latest-head {
+  padding: 20px 26px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.latest-head::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brand-secondary);
+  box-shadow: 0 0 0 3px rgba(238, 194, 94, 0.25);
+}
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 26px 20px;
+  display: flex;
+  flex-direction: column;
+}
+.news-list li + li {
+  border-top: 1px dashed rgba(139, 118, 103, 0.16);
+}
+.news-list a {
+  display: block;
+  padding: 12px 0;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.news-list a:hover {
+  transform: translateX(4px);
+}
+.news-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-primary);
+  line-height: 1.5;
+  transition: color 0.2s;
+}
+.news-list a:hover .news-title {
+  color: var(--color-brand);
+}
+.news-src {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--color-secondary);
+  letter-spacing: 0.3px;
+}
+.news-src::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+/* ============================================================
+   右底部 · 音乐播放条 293×66
+   ============================================================ */
+.card-music {
+  left: 532px;
+  top: 601px;
+  width: 293px;
+  height: 66px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.music-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-brand), #7fe3f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 10px 18px -8px rgba(47, 203, 231, 0.7);
+}
+.music-play:hover {
+  transform: scale(1.1);
+}
+.music-play svg {
+  width: 13px;
+  height: 13px;
+}
+.music-info {
+  flex: 1;
+  min-width: 0;
+}
+.music-name {
+  font-size: 14px;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.music-artist {
+  font-size: 11px;
+  color: var(--color-secondary);
+  margin-top: 2px;
+}
+.eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 22px;
+}
+.eq span {
+  width: 3px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--color-brand-secondary);
+  transform: scaleY(0.27);
+  transform-origin: bottom;
+  transition: transform 0.3s ease;
+}
+.eq.playing span {
+  animation: eqb 1s ease-in-out infinite;
+}
+.eq span:nth-child(1) { animation-delay: 0s; }
+.eq span:nth-child(2) { animation-delay: 0.18s; }
+.eq span:nth-child(3) { animation-delay: 0.36s; }
+.eq span:nth-child(4) { animation-delay: 0.12s; }
+@keyframes eqb {
+  0%, 100% { transform: scaleY(0.27); }
+  50%      { transform: scaleY(1); }
+}
+
+/* ============================================================
+   敲木鱼对话框
+   ============================================================ */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(91, 66, 63, 0.28);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.modal-mask.show {
+  opacity: 1;
+  visibility: visible;
+}
+.modal {
+  width: min(520px, 92vw);
+  background: var(--glass-sheen), var(--color-article);
+  border-radius: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+  padding: 30px 30px 26px;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.modal-mask.show .modal {
+  transform: translateY(0) scale(1);
+}
+.modal h3 {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.modal .modal-sub {
+  font-size: 12px;
+  color: var(--color-secondary);
+  margin-bottom: 16px;
+}
+.modal input,
+.modal textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 13px 16px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-primary);
+  outline: none;
+  margin-bottom: 12px;
+  font-family: var(--font-sans);
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.modal input:focus,
+.modal textarea:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(47, 203, 231, 0.18);
+}
+.modal textarea {
+  min-height: 130px;
+  max-height: 46vh;
+  resize: vertical;
+  overflow-y: auto;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+.modal .btn {
+  height: 40px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: transform 0.25s, filter 0.25s;
+}
+.modal .btn:hover { transform: translateY(-2px); }
+.modal .btn-cancel {
+  background: rgba(139, 118, 103, 0.14);
+  color: var(--color-primary);
+}
+.modal .btn-save {
+  background: var(--color-brand);
+  color: #fff;
+}
+
+/* ============================================================
+   内部页面通用
+   ============================================================ */
+.sub-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 9vh 24px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.sub-nav {
+  position: static;
+  width: 100%;
+  max-width: 520px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--r-pill); /* 胶囊：导航条两端全圆 */
+}
+.sub-nav .nav-title {
+  font-size: 18px;
+}
+.sub-nav .nav-links-mini {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.sub-nav .nav-links-mini a {
+  font-size: 13px;
+  color: var(--color-secondary);
+  padding: 6px 12px;
+  border-radius: 999px;
+  transition: background 0.25s, color 0.25s;
+}
+.sub-nav .nav-links-mini a:hover {
+  background: rgba(47, 203, 231, 0.14);
+  color: var(--color-primary);
+}
+.sub-card {
+  width: 100%;
+  padding: 34px 38px;
+  border-radius: var(--r-square); /* 方：与上方胶囊导航条形成方/圆对比 */
+  position: static;
+  box-shadow: var(--shadow-card);
+  background: var(--glass-sheen),
+    radial-gradient(
+      ellipse 70% 60% at 10% 4%,
+      rgba(47, 203, 231, 0.34) 0%,
+      rgba(47, 203, 231, 0) 70%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 94% 98%,
+      rgba(238, 194, 94, 0.3) 0%,
+      rgba(238, 194, 94, 0) 70%
+    ),
+    var(--color-article);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat))
+    var(--glass-tint);
+}
+.sub-card h1 {
+  font-family: var(--font-averia);
+  font-size: 28px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: var(--color-primary);
+}
+.sub-card .sub-desc {
+  font-size: 13px;
+  color: var(--color-secondary);
+  margin-bottom: 22px;
+}
+.sub-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sub-list li {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.sub-list li:nth-child(1) { animation-delay: 0.12s; }
+.sub-list li:nth-child(2) { animation-delay: 0.20s; }
+.sub-list li:nth-child(3) { animation-delay: 0.28s; }
+.sub-list li:nth-child(4) { animation-delay: 0.36s; }
+.sub-list li:nth-child(5) { animation-delay: 0.44s; }
+.sub-list li:nth-child(n+6) { animation-delay: 0.52s; }
+.sub-list li:hover {
+  transform: translateX(6px);
+}
+.sub-list .ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* 圆：方块卡片里点一枚圆，方中带圆 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sub-list .t {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.sub-list .d {
+  font-size: 12.5px;
+  color: var(--color-secondary);
+  margin-top: 3px;
+}
+/* 可点击的联系条目（如邮箱）：整行可点，继承 li 的 hover 右移 */
+.sub-list .mail-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  color: inherit;
+}
+.sub-list .mail-link:hover .t {
+  color: var(--color-brand);
+}
+
+/* ============================================================
+   参差感：左右 / 上下交错
+   ============================================================
+   规则只有一条：把版面当棋盘，按「列号 + 行号」的奇偶分成 A / B 两组。
+   相邻的两张卡必定落在不同组，位移方向于是天然交错：
+
+     A 组（列+行 = 偶）→ 左上：left −7px、top −6px、rotate −0.5°
+     B 组（列+行 = 奇）→ 右下：left +7px、top +6px、rotate +0.5°
+
+     A：导航(1,1) · 问候(2,2) · 推荐(2,4) · 时钟(3,1)
+     B：新闻(1,2) · 横幅(2,1) · 社交(2,3) · 音乐(2,5) · 日历(3,2)
+
+   结果：横着读是 左→右→左，竖着读也是 左→右→左，
+   卡片像被一条 S 形串起来，不再对齐成表格。
+   （旋转也跟着同一组走，方向与位移一致，交错感更整齐。）
+
+   想换方向：把 A / B 两组的 ± 号对调。
+   想换幅度：只改 7 / 6 / 0.5 这三个数就行；全部清零即回到齐整格局。
+   注：rotate 用的是独立变换属性，不与 hover 的 translateY(-4px) 冲突。 */
+.card-nav      { left: -67px; top: 39px;  rotate: -0.5deg; }   /* A · 原 -60 / 45 */
+.card-latest   { left: -53px; top: 403px; rotate: 0.5deg; }    /* B · 原 -60 / 397 */
+.card-banner   { left: 263px; top: -39px; rotate: 0.5deg; }    /* B · 原 256 / -45 */
+.card-hello    { left: 249px; top: 185px; rotate: -0.5deg; }   /* A · 原 256 / 191 */
+.card-clock    { left: 645px; top: 105px; rotate: -0.5deg; width: 238px; }  /* A · 原 652 / 111 / 232 */
+.card-calendar { left: 659px; top: 285px; rotate: 0.5deg; }    /* B · 原 652 / 279 */
+.card-social   { left: 308px; top: 521px; rotate: 0.5deg; }    /* B · 原 301 / 515 */
+.card-rec      { left: 294px; top: 593px; rotate: -0.5deg; width: 208px; }  /* A · 原 301 / 599 / 200 */
+.card-music    { left: 539px; top: 607px; rotate: 0.5deg; }    /* B · 原 532 / 601 */
+
+/* ============================================================
+   移动端 · 布局切换为纵向堆叠
+   ============================================================ */
+@media (max-width: 640px) {
+  /* 移动端是纵向堆叠，left/top 失效；轻摆也要收回，否则整列歪着不好读 */
+  .card {
+    rotate: 0deg;
+  }
+  .stage {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none !important;
+    height: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 88px 16px 48px;
+  }
+  .card {
+    position: static;
+    width: min(360px, 92vw) !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .card-banner {
+    display: none; /* 移动端隐藏顶部横幅插画 */
+  }
+  .btn-muyu {
+    position: fixed;
+    right: 18px;
+    top: 18px;
+  }
+  .card-nav {
+    order: 0;
+    gap: 14px;
+  }
+  .card-hello {
+    order: 1;
+  }
+  .card-clock {
+    order: 2;
+  }
+  .card-calendar {
+    order: 3;
+  }
+  .card-latest {
+    order: 4;
+  }
+  .card-social {
+    order: 5;
+    justify-content: center;
+  }
+  .card-rec {
+    order: 6;
+  }
+  .card-music {
+    order: 7;
+  }
+  /* 面板在小屏上收窄、减小圆角与字号，图例与概览改成上下两行 */
+  .cal-sheet {
+    width: 94vw;
+    height: min(560px, 82vh);
+    border-radius: 26px;
+  }
+  .sheet-head {
+    padding: 16px 16px 12px;
+  }
+  .sheet-ym {
+    font-size: 20px;
+  }
+  .sheet-body {
+    padding: 10px 12px 4px;
+  }
+  .sheet-week,
+  .sheet-grid {
+    gap: 4px;
+  }
+  .sd {
+    border-radius: 11px;
+  }
+  .sd-n {
+    font-size: 15px;
+  }
+  .sd-t {
+    font-size: 8.5px;
+  }
+  .sd-b {
+    top: 5px;
+    right: 5px;
+  }
+  .sheet-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 16px 14px;
+  }
+  .sheet-sum {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* ============================================================
+   虚拟鼠标（Virtual Cursor）
+   ============================================================
+   为什么废掉 `cursor: url(...)` 图片光标：
+     · 系统光标是一张固定位图，先按固定像素栅格化、再随屏幕缩放做插值，
+       在 125% / 150% 的屏上边沿就是发虚的，"清晰"这条天然做不到；
+     · 位图颜色写死，给不了半透明，更给不了"背后内容被磨砂"的玻璃质感；
+     · 老版那张 cursor.svg 的热点还标错在左上角 (2,1)，图形却画在画布正中，
+       热点和视觉中心差着 10px 以上，按下去是偏的。
+
+   现在是一支 position: fixed 的 DOM 箭头跟着指针走（逻辑在 script.js 末尾）：
+     .vcur-glass  clip-path 裁成箭头轮廓的半透明灰渐变（不磨砂，原因见下）
+     .vcur-edge   同一条轮廓画两条 path：深色宽线垫底 + 白色细线，边缘任何背景上都清楚
+   就这两层 —— 没有尾巴、没有拖尾、没有悬停变色、没有外发光，普通鼠标，只是灰玻璃的。
+   形状是一支不带尾巴的三角箭头：老版那条细腿只有 3px 宽、还斜着往下伸，糊成一坨脏点，
+   删掉后是干净的直边。
+
+   三条硬约束（前两条关乎"清晰"，第三条关乎"不掉帧"）：
+     1. 坐标在 JS 里按 devicePixelRatio 取整 —— 落在半像素上的斜边会被插值成灰边；
+     2. 全程只用 translate3d 平移、绝不 scale：缩放会把描边当位图重采样，
+        所以这里任何状态都不做尺寸过渡，形状本身永远不参与动画；
+     3. 显示/隐藏走 visibility，不用 opacity —— 理由见下面最后一段。
+
+   ⚠️ 性能红线（真机实测掉帧严重换来的教训）：这一节**一个 filter 都不许有**。
+     backdrop-filter 曾在这里挂过 blur(6px)：光标每帧平移、背后像素每帧变化，
+     浏览器就要每帧把整个 backdrop root（整页）重新投影 + 模糊一遍，真机直接掉帧；
+     无头 --disable-gpu 量不出这个成本（合成发生在 GPU），别被环境骗了。
+     drop-shadow 也一样是 filter pass，衬底已改成 SVG 双描边。
+     顺带地雷：容器 .vcur 上不能挂 filter / opacity 过渡，clip-path 只能加在
+     .vcur-glass 自己身上 —— 否则会另立 backdrop root（这条在新结构里依然成立，
+     clip-path 裁形必须留在玻璃层自己身上）。
+     隐藏开关用 visibility：隐藏时不绘制、显示时不重建，连"淡入"这种
+     必然丢帧的过渡也一并省了。 */
+.vcur {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999;          /* 高于模态层与日历面板：任何情况下指针都不该被盖住 */
+  width: 22px;            /* 与箭头路径的 22×28 画布一致，clip-path 才能对上 */
+  height: 28px;
+  pointer-events: none;   /* 绝不能挡住点击 */
+  visibility: hidden;     /* 关掉时整体隐去，不残留一个箭头冻在左上角 */
+  will-change: transform; /* 独占一层合成层：移动只走 translate3d，不重排、不重绘 */
+}
+.vcur.on {
+  visibility: visible;
+}
+
+/* 磨砂玻璃层。轮廓路径由 script.js 内联写上（和描边同源，只维护一份）。
+   底色是中性灰，不是白 —— 白玻璃压在浅色石头上几乎读不出轮廓，只剩一个"亮块"；
+   灰渐变给的是玻璃的厚度：左上受光偏亮、右下略深，压在任何背景上都认得出是灰的。
+   三档半透明让背后的照片透过来 —— 是"灰玻璃"，不是一块灰板。
+
+   ⚠️ 曾经在这里挂 backdrop-filter: blur(6px)，真实机器上掉帧严重，已删：
+   光标是每帧平移的元素，背后像素随之每帧变化，浏览器不得不把整个 backdrop root
+   （从 html 算起就是整页）重新投影 + 模糊一遍 —— 每帧一次全页 blur pass。
+   无头 --disable-gpu 环境量不出这个成本（那次验收的盲区），真机上才暴露。
+   现在的"玻璃感"全部来自半透明渐变 + 白边 + 高光描边，移动时只有一次合成层平移，
+   零重投影、零重光栅化。 */
+.vcur-glass {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: linear-gradient(
+    152deg,
+    rgba(158, 163, 172, 0.55) 0%,
+    rgba(122, 128, 138, 0.46) 52%,
+    rgba(140, 145, 155, 0.50) 100%
+  );
+}
+
+/* 描边层：同一轮廓画两条 path —— 底下一条深色宽线、上面一条白色细线。
+   曾经用 filter: drop-shadow 做衬底，为了"零 filter"改成双描边：
+   filter 即便内容不变，也是合成树上的额外 pass；双 path 就是纯 SVG 描边，画一次随层平移。
+   白边负责"亮"，深色底线负责"分离"，任何背景上都认得出轮廓（macOS 光标同款思路）。
+   颜色与线宽写在这里、不写在 SVG 的 stroke 属性上：路径归 JS、配色归 CSS，各只有一份。 */
+.vcur-edge {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.vcur-edge path {
+  fill: none;
+  stroke-linejoin: round;
+}
+.vcur-edge .under {
+  stroke: rgba(58, 62, 70, 0.55);
+  stroke-width: 3;
+}
+.vcur-edge .line {
+  stroke: rgba(255, 255, 255, 0.96);
+  stroke-width: 1.5;
+}
+
+/* 系统光标只在 JS 真正跑起来后才藏（html.has-vcur 是脚本加的）。
+   用 !important 是为了压过 a / button / .day 这些零散的 cursor: pointer。
+   JS 挂了就什么也不加，用户照旧有默认光标可用。 */
+html.has-vcur,
+html.has-vcur * {
+  cursor: none !important;
+}
+
+/* ============================================================
+   日历详情面板（点日历卡打开）
+   ============================================================
+   这里只写"静止状态长什么样"，开合动画的位置/缩放全由 script.js 用 FLIP 算，
+   所以面板本身**不能写自己的居中 transform** —— transform 要空出来给动画用。
+   层级：layer(grid 居中) → backdrop(压暗虚化) → sheet(会从卡片长出来的面板)。 */
+body.sheet-lock {
+  overflow: hidden;
+}
+
+.cal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 600;          /* 低于虚拟鼠标 9999、高于页面所有卡片与模态 */
+  display: grid;
+  place-items: center;
+  /* 用 visibility 而不是 display:none —— 隐藏状态下 getBoundingClientRect 依然有效，
+     FLIP 必须先量出面板的最终矩形才能算出起始形变。 */
+  visibility: hidden;
+}
+.cal-layer.vis {
+  visibility: visible;
+}
+
+.cal-backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.34s ease;
+  /* iOS 那种"把底下的东西推远"：压暗 + 大幅虚化 */
+  background: rgba(18, 24, 32, 0.34);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+}
+
+.cal-sheet {
+  position: relative;
+  width: min(760px, 92vw);
+  height: min(580px, 86vh);
+  overflow: hidden;
+  border-radius: 34px;
+  /* 与卡片同源的液态玻璃：斜向高光 + 高明度底色 + 强模糊 */
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.12) 44%, rgba(255, 255, 255, 0) 70%),
+    rgba(252, 250, 248, 0.9);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  box-shadow:
+    0 48px 90px -34px rgba(16, 30, 45, 0.6),
+    0 2px 8px -3px rgba(16, 30, 45, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  /* 关键是 0 0：FLIP 的 translate+scale 以左上角为锚点，写成 50% 50% 会整体跑偏 */
+  transform-origin: 0 0;
+  opacity: 0;
+  transition:
+    transform 0.56s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.56s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.26s ease;
+  /* will-change 不写在这里：面板 99% 的时间是隐藏的，
+     常驻 will-change 等于让浏览器一直替它留一块 760×580 的合成层。
+     开合动画期间由 script.js 临时加上，动画结束就撤掉。 */
+}
+/* 内容单独一层：形变飞行的过程中先不显示，落位后再淡入。
+   否则那块被压到 45% 的文字会糊成一团 —— iOS 也是这么干的。 */
+.sheet-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.cal-layer.content .sheet-inner {
+  opacity: 1;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid rgba(74, 51, 48, 0.09);
+}
+.sheet-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.sheet-ym {
+  font-family: var(--font-averia);
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: 0.6px;
+  color: var(--color-primary);
+}
+.sheet-sub {
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: var(--color-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheet-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.sheet-nav,
+.sheet-close,
+.sheet-today {
+  display: grid;
+  place-items: center;
+  height: 31px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(74, 51, 48, 0.14),
+    0 1px 2px -1px rgba(30, 45, 60, 0.18);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.sheet-nav,
+.sheet-close {
+  width: 31px;
+}
+.sheet-nav svg,
+.sheet-close svg {
+  width: 15px;
+  height: 15px;
+}
+.sheet-nav:hover,
+.sheet-close:hover,
+.sheet-today:hover {
+  background: var(--color-brand);
+  color: #fff;
+}
+.sheet-nav:active,
+.sheet-close:active,
+.sheet-today:active {
+  transform: scale(0.94);
+}
+.sheet-today {
+  width: auto;
+  padding: 0 12px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.sheet-close {
+  margin-left: 4px;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 20px 6px;
+}
+.sheet-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 0 2px 8px;
+}
+.sheet-week span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--color-secondary);
+}
+.sheet-week span:nth-child(6),
+.sheet-week span:nth-child(7) {
+  color: #b5655c;
+}
+.sheet-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 单元格 ---------- */
+.sd {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.34);
+  box-shadow: inset 0 0 0 0.5px rgba(74, 51, 48, 0.07);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+.sd-n {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-primary);
+}
+/* 节日名占位固定高度：没有节日的格子里也留出这一行，整排数字才对齐 */
+.sd-t {
+  height: 10px;
+  font-size: 9.5px;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  color: var(--color-secondary);
+}
+.sd.blank {
+  opacity: 0;
+  pointer-events: none;
+  background: none;
+  box-shadow: none;
+}
+
+.sd.d-we .sd-n {
+  color: #b5655c;
+}
+
+/* 放假：暖红底 + 右上角「休」 */
+.sd.d-off {
+  background: rgba(208, 97, 79, 0.12);
+  box-shadow: inset 0 0 0 0.5px rgba(208, 97, 79, 0.22);
+}
+.sd.d-off .sd-n {
+  color: #c0453a;
+}
+.sd.d-off .sd-t {
+  color: #a9564b;
+  font-weight: 600;
+}
+/* 补班：冷灰底 + 右上角「班」 */
+.sd.d-work {
+  background: rgba(122, 133, 148, 0.14);
+  box-shadow: inset 0 0 0 0.5px rgba(122, 133, 148, 0.24);
+}
+.sd.d-work .sd-n {
+  color: #5b6673;
+}
+.sd.d-work .sd-t {
+  color: #77808d;
+  font-weight: 600;
+}
+
+.sd-b {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  padding: 2px 3px;
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+.sd.d-off .sd-b {
+  background: #d0614f;
+}
+.sd.d-work .sd-b {
+  background: #7d8896;
+}
+
+.sd.today {
+  box-shadow: inset 0 0 0 1.5px rgba(47, 203, 231, 0.85);
+}
+.sd.sel {
+  box-shadow: inset 0 0 0 2px var(--color-brand);
+  background: rgba(47, 203, 231, 0.14);
+}
+.sd:not(.blank):hover {
+  background: rgba(47, 203, 231, 0.16);
+}
+
+.sheet-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid rgba(74, 51, 48, 0.09);
+}
+.sheet-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.sheet-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--color-secondary);
+}
+.sheet-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.sheet-legend .k-off {
+  background: rgba(208, 97, 79, 0.72);
+}
+.sheet-legend .k-work {
+  background: rgba(122, 133, 148, 0.72);
+}
+.sheet-legend .k-we {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b5655c;
+}
+.sheet-sum {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: right;
+}
